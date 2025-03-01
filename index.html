@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игра: Порядок слов</title>
+    <title>Игра: Определения</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
-        .word-container { display: flex; justify-content: center; margin: 20px; }
-        .word { padding: 10px; margin: 5px; background: lightblue; cursor: grab; border-radius: 5px; }
-        #sentence { min-height: 40px; padding: 10px; border: 2px dashed #333; margin-top: 20px; }
-        button { margin-top: 20px; padding: 10px; }
+        .container { margin: 20px; }
+        .word-container { display: flex; flex-direction: column; align-items: center; }
+        .word, .definition { padding: 10px; margin: 5px; background: lightblue; cursor: grab; border-radius: 5px; display: inline-block; }
+        .dropzone { min-height: 40px; padding: 10px; border: 2px dashed #333; margin: 10px; width: 80%; }
+        #nextButton { display: none; margin-top: 20px; padding: 10px; }
     </style>
 </head>
 <body>
-    <h2>Составьте предложение:</h2>
-    <div class="word-container" id="words"></div>
-    <div id="sentence" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
-    <button onclick="checkSentence()">Проверить</button>
-    <p id="result"></p>
+    <h2>Соотнесите термины с их определениями:</h2>
+    <div class="container">
+        <div class="word-container" id="words"></div>
+        <div id="definitions"></div>
+        <button id="checkButton" onclick="checkAnswers()">Проверить</button>
+        <button id="nextButton" onclick="nextStep()">Продолжить</button>
+        <p id="result"></p>
+    </div>
     
     <script>
-        const correctSentence = "Я изучаю английский язык";
-        const words = correctSentence.split(" ").sort(() => Math.random() - 0.5);
+        const terms = [
+            { term: "Рецептурные лекарства", definition: "Лекарства, которые можно приобрести только при наличии рецепта от врача." },
+            { term: "Безрецептурные лекарства", definition: "Лекарства, которые можно приобрести без визита к врачу и без рецепта." },
+            { term: "Антибиотики", definition: "Препараты, которые подавляют рост или уничтожают микроорганизмы, вызывающие инфекции." }
+        ];
+        const shuffledTerms = [...terms].sort(() => Math.random() - 0.5);
         
         function allowDrop(event) { event.preventDefault(); }
         function drag(event) { event.dataTransfer.setData("text", event.target.id); }
@@ -31,25 +39,61 @@
             event.target.appendChild(document.getElementById(data));
         }
         
-        function createWords() {
-            let container = document.getElementById("words");
-            words.forEach((word, index) => {
-                let span = document.createElement("span");
-                span.innerText = word;
-                span.id = "word" + index;
-                span.classList.add("word");
-                span.draggable = true;
-                span.ondragstart = drag;
-                container.appendChild(span);
+        function createGame() {
+            let wordsContainer = document.getElementById("words");
+            let definitionsContainer = document.getElementById("definitions");
+            
+            shuffledTerms.forEach((item, index) => {
+                let wordSpan = document.createElement("span");
+                wordSpan.innerText = item.term;
+                wordSpan.id = "word" + index;
+                wordSpan.classList.add("word");
+                wordSpan.draggable = true;
+                wordSpan.ondragstart = drag;
+                wordsContainer.appendChild(wordSpan);
+                
+                let dropZone = document.createElement("div");
+                dropZone.classList.add("dropzone");
+                dropZone.ondrop = drop;
+                dropZone.ondragover = allowDrop;
+                dropZone.dataset.correctTerm = item.term;
+                
+                let definitionSpan = document.createElement("span");
+                definitionSpan.innerText = item.definition;
+                definitionSpan.classList.add("definition");
+                
+                definitionsContainer.appendChild(definitionSpan);
+                definitionsContainer.appendChild(dropZone);
             });
         }
         
-        function checkSentence() {
-            let sentence = Array.from(document.getElementById("sentence").children).map(el => el.innerText).join(" ");
-            document.getElementById("result").innerText = sentence === correctSentence ? "Верно!" : "Неправильно. Попробуйте ещё раз.";
+        function checkAnswers() {
+            let dropzones = document.querySelectorAll(".dropzone");
+            let allCorrect = true;
+            
+            dropzones.forEach(dropzone => {
+                let droppedWord = dropzone.children[0];
+                if (!droppedWord || droppedWord.innerText !== dropzone.dataset.correctTerm) {
+                    allCorrect = false;
+                }
+            });
+            
+            let resultText = document.getElementById("result");
+            let nextButton = document.getElementById("nextButton");
+            
+            if (allCorrect) {
+                resultText.innerText = "Верно!";
+                nextButton.style.display = "block";
+            } else {
+                resultText.innerText = "Неправильно. Попробуйте ещё раз.";
+            }
         }
         
-        createWords();
+        function nextStep() {
+            alert("Следующий этап!");
+        }
+        
+        createGame();
     </script>
 </body>
 </html>
