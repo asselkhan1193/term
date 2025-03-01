@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Порядок слов</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .word-container { display: flex; justify-content: center; margin: 20px; }
+        .word { padding: 10px; margin: 5px; background: lightblue; cursor: grab; border-radius: 5px; }
+        #sentence { min-height: 40px; padding: 10px; border: 2px dashed #333; margin-top: 20px; }
+        button { margin-top: 20px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Составьте предложение:</h2>
+    <div class="word-container" id="words"></div>
+    <div id="sentence" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <button onclick="checkSentence()">Проверить</button>
+    <p id="result"></p>
+    
+    <script>
+        const correctSentence = "Я изучаю английский язык";
+        const words = correctSentence.split(" ").sort(() => Math.random() - 0.5);
+        
+        function allowDrop(event) { event.preventDefault(); }
+        function drag(event) { event.dataTransfer.setData("text", event.target.id); }
+        function drop(event) {
+            event.preventDefault();
+            let data = event.dataTransfer.getData("text");
+            event.target.appendChild(document.getElementById(data));
+        }
+        
+        function createWords() {
+            let container = document.getElementById("words");
+            words.forEach((word, index) => {
+                let span = document.createElement("span");
+                span.innerText = word;
+                span.id = "word" + index;
+                span.classList.add("word");
+                span.draggable = true;
+                span.ondragstart = drag;
+                container.appendChild(span);
+            });
+        }
+        
+        function checkSentence() {
+            let sentence = Array.from(document.getElementById("sentence").children).map(el => el.innerText).join(" ");
+            document.getElementById("result").innerText = sentence === correctSentence ? "Верно!" : "Неправильно. Попробуйте ещё раз.";
+        }
+        
+        createWords();
+    </script>
+</body>
+</html>
